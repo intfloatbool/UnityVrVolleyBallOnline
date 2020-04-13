@@ -123,6 +123,8 @@ namespace Passer {
         //External flags
         public bool IsTranslateByPhysics { get; set; } = true;
 
+        public Transform PlayerBody { get; private set; }
+
         #region Init
         [HideInInspector]
         protected virtual void Awake() {
@@ -160,6 +162,25 @@ namespace Passer {
             StartTrackers();
 
             StartSensors();
+
+            InitBody();
+        }
+
+        private void InitBody()
+        {
+            var bodyTagName = "PlayerBody";
+            var colliders = GetComponentsInChildren<BoxCollider>();
+            for(int i = 0; i < colliders.Length; i++)
+            {
+                var col = colliders[i];
+                if(col != null && col.gameObject.tag.Equals(bodyTagName))
+                {
+                    PlayerBody = col.transform;
+                    break;
+                }
+            }
+
+            Debug.Log("Player body initiated!: " + PlayerBody?.name);
         }
 
         #endregion
