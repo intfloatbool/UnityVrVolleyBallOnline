@@ -78,6 +78,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rb: {fileID: 7741929423945173918}
+  _isDebug: 1
+  _debugForce: {x: 0, y: 0.5, z: 1}
+  _debugStrength: 200
 --- !u!114 &7741929423945173916
 MonoBehaviour:
   m_ObjectHideFlags: 0

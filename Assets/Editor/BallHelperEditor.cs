@@ -1,18 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class BallHelperEditor : MonoBehaviour
+namespace VrVolleyball.EditorHelpers
 {
-    // Start is called before the first frame update
-    void Start()
+    [CustomEditor(typeof(BallOnline))]
+    public class BallHelperEditor : Editor
     {
-        
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            BallOnline ball = (BallOnline)target;
+
+            if(GUILayout.Button("Add debug force"))
+            {
+                ball.AffectToBall(ball.DebugForce, ball.DebugStrength);
+            }
+        }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

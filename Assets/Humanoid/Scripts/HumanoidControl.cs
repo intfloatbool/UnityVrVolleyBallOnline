@@ -1837,10 +1837,7 @@ namespace Passer {
             float hipsTranslationY = localHipY - lastLocalHipY;
             if (Mathf.Abs(hipsTranslationY) < 0.01F)
             {
-                if(IsTranslateByPhysics)
-                {
-                    transform.Translate(gravitationalVelocity * Time.deltaTime);
-                }
+                transform.Translate(gravitationalVelocity * Time.deltaTime);
             }              
             lastLocalHipY = localHipY;
         }
