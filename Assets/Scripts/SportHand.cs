@@ -57,7 +57,11 @@ namespace VrVolleyball
                 var ball = hit.collider.GetComponent<BallOnline>();
                 if(ball != null)
                 {
-                    Debug.Log("Ball catched by side: " + rawDirection);
+                    if(_isDebug)
+                    {
+                        Debug.Log("Ball catched by side: " + rawDirection);
+                    }
+                    
                 }
             }
 
