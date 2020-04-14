@@ -9,7 +9,7 @@ namespace VrVolleyball
 
         [Space(2f)]
         [SerializeField] private bool _isDebug = true;
-
+        
         [Space(5f)]
         [Header("Runtime references")]
         [SerializeField] private bool _isCatchedBall;
@@ -20,7 +20,13 @@ namespace VrVolleyball
         }
 
         [SerializeField] private BallOnline _currentBall;
-        
+        public BallOnline CurrentBall => _currentBall;
+
+        [SerializeField] private Vector3 _lastDirection;
+        public Vector3 LastDirection => _lastDirection;
+
+        public Vector3 LastHittedPosition { get; private set; }
+
         private void Update()
         {
             TryCatchBallEachSideLoop();
@@ -40,12 +46,28 @@ namespace VrVolleyball
 
             for(int i = 0; i < directions.Length; i++)
             {
-                CatchBallBySyde(directions[i]);
+                var direction = directions[i];
+                if(CatchBallBySyde(direction))
+                {
+                    
+                    _isCatchedBall = true;
+                    _lastDirection = direction;
+                    return;
+                }              
             }
+
+            _isCatchedBall = false;
+            _currentBall = null;
+            _lastDirection = Vector3.zero;
         }
 
-        private void CatchBallBySyde(Vector3 rawDirection)
+        private bool CatchBallBySyde(Vector3 rawDirection)
         {
+            if (_isDebug)
+            {
+                Debug.DrawRay(transform.position, transform.TransformDirection(rawDirection) * _rayLength, Color.red, 0.3f);
+            }
+
             RaycastHit hit;
             if(Physics.SphereCast(transform.position,
                 _rayRadius, 
@@ -61,15 +83,16 @@ namespace VrVolleyball
                     {
                         Debug.Log("Ball catched by side: " + rawDirection);
                     }
-                    
+
+                    LastHittedPosition = hit.point;
+                    _currentBall = ball;
+                    return true;
+                                        
                 }
             }
-
-            if(_isDebug)
-            {
-                Debug.DrawRay(transform.position, transform.TransformDirection(rawDirection) * _rayLength, Color.yellow, 0.3f);
-            }
+            return false;
         }
     }
 }
+
 

@@ -24,8 +24,13 @@ namespace VrVolleyball
         {
             if(photonView.IsMine == false)
             {
-                _rb.isKinematic = true;
+                SetKinematic(true);
             }
+        }
+
+        public void SetKinematic(bool isKinematic)
+        {
+            _rb.isKinematic = isKinematic;
         }
 
         public void AffectToBall(Vector3 affectVector, float strength)
