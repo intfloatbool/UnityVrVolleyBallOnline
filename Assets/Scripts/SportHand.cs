@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace VrVolleyball
 {
@@ -6,6 +7,7 @@ namespace VrVolleyball
     {
         [SerializeField] private float _rayLength = 0.1f;
         [SerializeField] private float _rayRadius = 0.03f;
+        [SerializeField] private float _speedCheckingDelay = 1f;
 
         [Space(2f)]
         [SerializeField] private bool _isDebug = true;
@@ -25,11 +27,33 @@ namespace VrVolleyball
         [SerializeField] private Vector3 _lastDirection;
         public Vector3 LastDirection => _lastDirection;
 
+        [SerializeField] private float _handSpeed;
+        public float HandSpeed => _handSpeed;
+
         public Vector3 LastHittedPosition { get; private set; }
+
+        public event Action<Vector3> OnBallTouched = (directionWorldSpace) => { };
+
+        private Vector3 _lastHandPosition;
+        private float _handSpeedTimer;
+
 
         private void Update()
         {
             TryCatchBallEachSideLoop();
+            CalcualteSpeedLoop();
+        }
+
+        private void CalcualteSpeedLoop()
+        {
+            if(_handSpeedTimer >= _speedCheckingDelay)
+            {
+                _lastHandPosition = transform.position;
+                _handSpeedTimer = 0;
+            }
+
+            _handSpeed = (transform.position - _lastHandPosition).sqrMagnitude;
+            _handSpeedTimer += Time.deltaTime;
         }
 
         private void TryCatchBallEachSideLoop()
@@ -59,6 +83,7 @@ namespace VrVolleyball
                     
                     _isCatchedBall = true;
                     _lastDirection = direction;
+                    OnBallTouched(transform.TransformDirection(_lastDirection));
                     return;
                 }              
             }
