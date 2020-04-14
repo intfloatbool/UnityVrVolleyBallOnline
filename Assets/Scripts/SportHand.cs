@@ -32,7 +32,7 @@ namespace VrVolleyball
 
         public Vector3 LastHittedPosition { get; private set; }
 
-        public event Action<Vector3> OnBallTouched = (directionWorldSpace) => { };
+        public event Action<SportHand, BallOnline, Vector3> OnBallTouched = (hand, ball, directionWorldSpace) => { };
 
         private Vector3 _lastHandPosition;
         private float _handSpeedTimer;
@@ -63,15 +63,26 @@ namespace VrVolleyball
                 ResetHand();
                 return;
             }
-                
+
             var directions = new Vector3[]
             {
-                Vector3.left,
-                Vector3.up,
-                Vector3.right,
-                Vector3.down,
-                Vector3.forward,
-                Vector3.back
+                new Vector3(-1,0,0),
+                new Vector3(-0.5f,0,0),
+                new Vector3(0,1,0),
+                new Vector3(1,0,0),
+                new Vector3(0.5f,0,0),
+                new Vector3(0,-1,0),
+                new Vector3(0,0,1),
+                new Vector3(0,0,0.5f),
+                new Vector3(0,0,-1),
+                new Vector3(0,0,-0.5f)
+
+                //Vector3.left,
+                //Vector3.up,
+                //Vector3.right,
+                //Vector3.down,
+                //Vector3.forward,
+                //Vector3.back
             };
             
             for (int i = 0; i < directions.Length; i++)
@@ -83,7 +94,7 @@ namespace VrVolleyball
                     
                     _isCatchedBall = true;
                     _lastDirection = direction;
-                    OnBallTouched(transform.TransformDirection(_lastDirection));
+                    OnBallTouched(this, _currentBall, transform.TransformDirection(_lastDirection));
                     return;
                 }              
             }
