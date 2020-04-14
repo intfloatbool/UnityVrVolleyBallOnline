@@ -34,6 +34,12 @@ namespace VrVolleyball
 
         private void TryCatchBallEachSideLoop()
         {
+            if (!Physics.CheckSphere(transform.position, _rayLength))
+            {
+                ResetHand();
+                return;
+            }
+                
             var directions = new Vector3[]
             {
                 Vector3.left,
@@ -43,10 +49,11 @@ namespace VrVolleyball
                 Vector3.forward,
                 Vector3.back
             };
-
-            for(int i = 0; i < directions.Length; i++)
+            
+            for (int i = 0; i < directions.Length; i++)
             {
                 var direction = directions[i];
+                
                 if(CatchBallBySyde(direction))
                 {
                     
@@ -56,6 +63,11 @@ namespace VrVolleyball
                 }              
             }
 
+            ResetHand();
+        }
+
+        private void ResetHand()
+        {
             _isCatchedBall = false;
             _currentBall = null;
             _lastDirection = Vector3.zero;
@@ -67,6 +79,7 @@ namespace VrVolleyball
             {
                 Debug.DrawRay(transform.position, transform.TransformDirection(rawDirection) * _rayLength, Color.red, 0.3f);
             }
+
 
             RaycastHit hit;
             if(Physics.SphereCast(transform.position,
