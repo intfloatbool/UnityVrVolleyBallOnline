@@ -15,6 +15,9 @@ namespace VrVolleyball
         [SerializeField] private SportHand _leftHand;
         [SerializeField] private SportHand _rightHand;
 
+        [SerializeField] private float _handSpeedLimitToPunch = 0.3f;
+        [SerializeField] private float _touchFactor = 4f;
+
         [Space(3f)]
         [SerializeField] private BallOnline _ball;
 
@@ -43,27 +46,55 @@ namespace VrVolleyball
              * 0 is not pressed, 1 is pressed to the end.
              */
 
+            if (IsHandPunchBall(_leftHand))
+                return;
+
+            if (IsHandPunchBall(_rightHand))
+                return;
 
             isCanGrab = _leftHand.IsCatchedBall && _rightHand.IsCatchedBall;
 
             if (isCanGrab && _ball != null)
             {
                 var middlePosition = (_leftHand.transform.position + _rightHand.transform.position) / 2;
-                _ball.transform.position = middlePosition;
-                SetBallKinematicLocally(true);
+                SetBallPosition(middlePosition);
+                SetBallKinematic(true);
             }
             else
             {
                 isCanGrab = false;
-                SetBallKinematicLocally(false);
+                SetBallKinematic(false);
             }           
 
         }
 
-        private void SetBallKinematicLocally(bool isKinematic)
+        private bool IsHandPunchBall(SportHand hand)
         {
-            if (_ball != null && _ball.photonView.IsMine)
-                _ball.SetKinematic(isKinematic);
+            if (hand.IsCatchedBall && hand.HandSpeed >= _handSpeedLimitToPunch)
+            {
+                var transformedDirection = hand.transform.TransformDirection(hand.LastDirection);
+                hand.CurrentBall.AffectToBall(transformedDirection, hand.HandSpeed * _touchFactor);
+                return true;
+            }
+
+            return false;
         }
+
+        private void SetBallPosition(Vector3 position)
+        {
+            if(_ball != null)
+            {
+                _ball.SetPosition(position);
+            }
+        }
+
+        private void SetBallKinematic(bool isKinematic)
+        {
+            if(_ball != null)
+            {
+                _ball.SetKinematic(isKinematic);
+            }
+        }
+
     }
 }

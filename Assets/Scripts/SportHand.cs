@@ -36,7 +36,36 @@ namespace VrVolleyball
 
         private Vector3 _lastHandPosition;
         private float _handSpeedTimer;
+        [SerializeField] private Vector3[] _directions;
 
+        private void Start()
+        {
+            if(_directions.Length == 0)
+            {
+                InitDefaultDirections();
+            }
+        }
+
+        private void InitDefaultDirections()
+        {
+            _directions = new Vector3[]
+            {
+                Vector3.left,
+                Vector3.up,
+                Vector3.right,
+                Vector3.down,
+                Vector3.forward,
+                Vector3.back,
+                new Vector3(1, 1, 0),
+                new Vector3(1, 1, 1),
+                new Vector3(0, 1, 1),
+                new Vector3(1, 0, 1),
+                -new Vector3(1, 1, 0),
+                -new Vector3(1, 1, 1),
+                -new Vector3(0, 1, 1),
+                -new Vector3(1, 0, 1),
+            };
+        }
 
         private void Update()
         {
@@ -64,30 +93,10 @@ namespace VrVolleyball
                 return;
             }
 
-            var directions = new Vector3[]
-            {
-                new Vector3(-1,0,0),
-                new Vector3(-0.5f,0,0),
-                new Vector3(0,1,0),
-                new Vector3(1,0,0),
-                new Vector3(0.5f,0,0),
-                new Vector3(0,-1,0),
-                new Vector3(0,0,1),
-                new Vector3(0,0,0.5f),
-                new Vector3(0,0,-1),
-                new Vector3(0,0,-0.5f)
-
-                //Vector3.left,
-                //Vector3.up,
-                //Vector3.right,
-                //Vector3.down,
-                //Vector3.forward,
-                //Vector3.back
-            };
             
-            for (int i = 0; i < directions.Length; i++)
+            for (int i = 0; i < _directions.Length; i++)
             {
-                var direction = directions[i];
+                var direction = _directions[i];
                 
                 if(CatchBallBySyde(direction))
                 {
