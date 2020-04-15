@@ -56,7 +56,6 @@ namespace VrVolleyball
         {
             if(photonView.IsMine)
             {
-                _rb.isKinematic = false;
                 _rb.AddForce(affectVector * strength);
             }
         }

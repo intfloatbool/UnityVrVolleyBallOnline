@@ -52,6 +52,9 @@ namespace VrVolleyball
             if (IsHandPunchBall(_rightHand))
                 return;
 
+
+            //TODO: remove this logic ?
+            return;
             isCanGrab = _leftHand.IsCatchedBall && _rightHand.IsCatchedBall;
 
             if (isCanGrab)
@@ -68,8 +71,12 @@ namespace VrVolleyball
             if (hand.IsCatchedBall && hand.HandSpeed >= _handSpeedLimitToPunch)
             {
                 var transformedDirection = hand.transform.TransformDirection(hand.LastDirection);
-                hand.CurrentBall.AffectToBall(transformedDirection, hand.HandSpeed * _touchFactor);
-                Debug.Log("Affect to ball!");
+                var forcePower = hand.HandSpeed * _touchFactor;
+                hand.CurrentBall.AffectToBall(transformedDirection, forcePower);
+                Debug.Log($"Affect to ball!  Hand: {hand.gameObject.name}\n " 
+                    + "Direction: " +
+                    transformedDirection + 
+                    "\nForcePower: " + forcePower);
                 return true;
             }
 
