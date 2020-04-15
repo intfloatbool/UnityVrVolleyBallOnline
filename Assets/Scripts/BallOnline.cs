@@ -56,7 +56,11 @@ namespace VrVolleyball
             var myHum = humanoids.FirstOrDefault(h => !h.isRemote);
             if(myHum != null)
             {
-                transform.position = myHum.PlayerBody.position + (Vector3.forward * 0.3f) + (Vector3.up * 0.3f);
+                transform.position = myHum.PlayerBody.position + 
+                    (myHum.PlayerBody.forward * 0.3f) + 
+                    (myHum.PlayerBody.up * 0.3f);
+
+                _rb.velocity = Vector3.zero;
             }
 
             Debug.Log("BALL TO ME DEBUG!");
