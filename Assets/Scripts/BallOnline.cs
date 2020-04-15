@@ -9,6 +9,13 @@ namespace VrVolleyball
     public class BallOnline : MonoBehaviourPun
     {
         [SerializeField] private Rigidbody _rb;
+        public Rigidbody Rb => _rb;
+
+
+        [SerializeField] private bool _isCheckingForDownfall = true;
+        [SerializeField] private float _downFallY = -0.3f;
+        [SerializeField] private Vector3 _startPosition = new Vector3(0, 4, 0);
+
 
         [Space(5f)]
         [Header("Debug")]
@@ -17,18 +24,12 @@ namespace VrVolleyball
         public Vector3 DebugForce => _debugForce;
         [SerializeField] private float _debugStrength;
         public float DebugStrength => _debugStrength;
-
-        private void Awake()
-        {
-            if(photonView.IsMine == false)
-            {
-                _rb.isKinematic = true;
-            }
-        }
+        
 
         public void SetKinematic(bool isKinematic)
         {
             photonView.RPC("SetKinematicRPC", RpcTarget.All, isKinematic);
+           
         }
 
         [PunRPC]
@@ -37,12 +38,17 @@ namespace VrVolleyball
             if(photonView.IsMine)
             {
                 _rb.isKinematic = isKinematic;
+                if(_isDebug)
+                {
+                    Debug.Log("Kinematic changed~! : " + isKinematic);
+                }
             }
         }
 
         public void AffectToBall(Vector3 affectVector, float strength)
         {
             photonView.RPC("AffectToBallRPC", RpcTarget.All, affectVector, strength);
+            
         }
 
         [PunRPC]
@@ -85,11 +91,20 @@ namespace VrVolleyball
 
         private void Update()
         {
-            if(_isDebug && photonView.IsMine)
+            if(_isDebug)
             {
                 if(OVRInput.GetDown(OVRInput.RawButton.B) || Input.GetKeyDown(KeyCode.Z))
                 {
                     BallToMeDebug();
+                }
+            }
+
+            if(photonView.IsMine)
+            {
+                if (_isCheckingForDownfall && transform.position.y <= _downFallY)
+                {
+                    SetPosition(_startPosition);
+                    SetVelocity(Vector3.zero);
                 }
             }
         }

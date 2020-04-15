@@ -67,7 +67,7 @@ namespace VrVolleyball
             };
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
             TryCatchBallEachSideLoop();
             CalcualteSpeedLoop();

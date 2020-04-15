@@ -30,7 +30,7 @@ namespace VrVolleyball
 
         private IEnumerator SearchBall()
         {
-            var delay = new WaitForSeconds(1f);
+            var delay = new WaitForSeconds(0.4f);
             while(_ball == null)
             {
                 _ball = FindObjectOfType<BallOnline>();
@@ -54,18 +54,13 @@ namespace VrVolleyball
 
             isCanGrab = _leftHand.IsCatchedBall && _rightHand.IsCatchedBall;
 
-            if (isCanGrab && _ball != null)
+            if (isCanGrab)
             {
                 var middlePosition = (_leftHand.transform.position + _rightHand.transform.position) / 2;
                 SetBallPosition(middlePosition);
-                SetBallKinematic(true);
-            }
-            else
-            {
-                isCanGrab = false;
-                SetBallKinematic(false);
-            }           
+                SetBallVelocity(Vector3.zero);
 
+            }        
         }
 
         private bool IsHandPunchBall(SportHand hand)
@@ -74,6 +69,7 @@ namespace VrVolleyball
             {
                 var transformedDirection = hand.transform.TransformDirection(hand.LastDirection);
                 hand.CurrentBall.AffectToBall(transformedDirection, hand.HandSpeed * _touchFactor);
+                Debug.Log("Affect to ball!");
                 return true;
             }
 
@@ -95,6 +91,15 @@ namespace VrVolleyball
                 _ball.SetKinematic(isKinematic);
             }
         }
+
+        private void SetBallVelocity(Vector3 velocity)
+        {
+            if(_ball != null)
+            {
+                _ball.SetVelocity(velocity);
+            }
+        }
+
 
     }
 }
