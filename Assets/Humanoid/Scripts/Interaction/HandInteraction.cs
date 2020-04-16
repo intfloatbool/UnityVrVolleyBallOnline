@@ -141,7 +141,7 @@ namespace Passer {
         public static bool GrabRigidbody(HandTarget handTarget, Rigidbody objRigidbody, bool rangeCheck = true) {
             //Debug.Log("GrabRigidbody");
 
-
+            return false;
             if (objRigidbody == handTarget.otherHand.handRigidbody)
                 return false;
 

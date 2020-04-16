@@ -6,7 +6,8 @@ namespace VrVolleyball
 {
     public class PlayerSportHands : MonoBehaviour
     {
-
+        [SerializeField] private KeyCode _leftGrabDebugKey = KeyCode.O;
+        [SerializeField] private KeyCode _rightGrabDebugKey = KeyCode.P;
 
         [SerializeField] private bool _isDebug = true;
         [Space(3f)]
@@ -38,11 +39,21 @@ namespace VrVolleyball
 
         void Update()
         {
+
+            //TODO: 
+            // -Realize both-hands ball trhrowing by button pressed
+            // -Ball grabbing with one hand
+            // GRAB >
             /*
              * You can check the static float from
              * OVRInput.Get(Axis.1D.PrimaryHandTrigger, OVRInput.Controller.LTouch), 
              * 0 is not pressed, 1 is pressed to the end.
              */
+
+            if (IsHandGrabBall(_leftHand))
+                return;
+            if (IsHandGrabBall(_rightHand))
+                return;
 
             if (IsHandPunchBall(_leftHand))
                 return;
@@ -59,6 +70,36 @@ namespace VrVolleyball
                 SetBallPosition(middlePosition);
                 SetBallVelocity(Vector3.zero);
             }        
+        }
+
+        private bool IsHandGrabBall(SportHand hand)
+        {
+            //0 is not pressed, 1 is pressed to the end.
+            var controller = hand.IsLeft ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+
+            var grabValue = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller);
+            var isGrabbed = Mathf.Approximately(grabValue, 1f);
+
+            if(_isDebug)
+            {
+                var key = hand.IsLeft ? _leftGrabDebugKey : _rightGrabDebugKey;
+                isGrabbed = Mathf.Approximately(grabValue, 1f) || Input.GetKey(key); 
+            }
+
+            if (_ball != null && hand.IsCatchedBall && isGrabbed)
+            {
+                var ballOffset = _ball.Collider.radius;
+                var handPosition = hand.transform.position;
+                var ballPosition = handPosition + (-hand.transform.up) * ballOffset;
+                SetBallPosition(ballPosition);
+                SetBallVelocity(Vector3.zero);
+
+                if(_isDebug)
+                {
+                    Debug.Log($"Hand: {hand.gameObject.name} grabbed ball!");
+                }
+            }
+            return false;
         }
 
         private bool IsHandPunchBall(SportHand hand)

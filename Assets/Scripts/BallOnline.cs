@@ -8,6 +8,9 @@ namespace VrVolleyball
 {
     public class BallOnline : MonoBehaviourPun
     {
+        [SerializeField] private SphereCollider _collider;
+        public SphereCollider Collider => _collider;
+
         [SerializeField] private Rigidbody _rb;
         public Rigidbody Rb => _rb;
 
@@ -31,6 +34,11 @@ namespace VrVolleyball
             if(photonView.IsMine == false)
             {
                 _rb.isKinematic = true;
+            }
+
+            if(_collider == null)
+            {
+                _collider = GetComponent<SphereCollider>();
             }
         }
 
