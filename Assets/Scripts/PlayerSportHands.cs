@@ -6,11 +6,9 @@ namespace VrVolleyball
 {
     public class PlayerSportHands : MonoBehaviour
     {
-        [SerializeField] private bool _isDebugRightHandGrab;
-        [SerializeField] private bool _isDebugLeftHandGrab;
 
-        [SerializeField] private KeyCode _leftGrabKey = KeyCode.O;
-        [SerializeField] private KeyCode _rightGrabKey = KeyCode.P;
+
+        [SerializeField] private bool _isDebug = true;
         [Space(3f)]
         [SerializeField] private SportHand _leftHand;
         [SerializeField] private SportHand _rightHand;
@@ -53,8 +51,6 @@ namespace VrVolleyball
                 return;
 
 
-            //TODO: remove this logic ?
-            return;
             isCanGrab = _leftHand.IsCatchedBall && _rightHand.IsCatchedBall;
 
             if (isCanGrab)
@@ -62,7 +58,6 @@ namespace VrVolleyball
                 var middlePosition = (_leftHand.transform.position + _rightHand.transform.position) / 2;
                 SetBallPosition(middlePosition);
                 SetBallVelocity(Vector3.zero);
-
             }        
         }
 
@@ -70,13 +65,31 @@ namespace VrVolleyball
         {
             if (hand.IsCatchedBall && hand.HandSpeed >= _handSpeedLimitToPunch)
             {
-                var transformedDirection = hand.transform.TransformDirection(hand.LastDirection);
+                var originHandPosition = hand.transform.position;
+
+                if (_ball == null)
+                    return false;
+                var relativePos = _ball.transform.position - originHandPosition;
+                var facingToPos = relativePos.normalized;
+                if(hand.IsLeft)
+                {
+                    facingToPos = new Vector3(
+                        -facingToPos.x,
+                        facingToPos.y,
+                        -facingToPos.z
+                        );
+                }
+                Debug.Log("Punc at pos: " + facingToPos);
                 var forcePower = hand.HandSpeed * _touchFactor;
-                hand.CurrentBall.AffectToBall(transformedDirection, forcePower);
-                Debug.Log($"Affect to ball!  Hand: {hand.gameObject.name}\n " 
+                hand.CurrentBall.AffectToBall(facingToPos, forcePower);
+                
+                if(_isDebug)
+                {
+                    Debug.Log($"Affect to ball!  Hand: {hand.gameObject.name}\n "
                     + "Direction: " +
-                    transformedDirection + 
+                    facingToPos +
                     "\nForcePower: " + forcePower);
+                }
                 return true;
             }
 

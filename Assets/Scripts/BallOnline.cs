@@ -51,6 +51,8 @@ namespace VrVolleyball
         public void AffectToBallRPC(Vector3 affectVector, float strength)
         {
             _rb.AddForce(affectVector * strength);
+
+            Debug.Log($"Affect from remote player! Vector: {affectVector}, strength: {strength}");
         }
 
         public void SetPosition(Vector3 position)

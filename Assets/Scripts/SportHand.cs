@@ -30,6 +30,9 @@ namespace VrVolleyball
         [SerializeField] private float _handSpeed;
         public float HandSpeed => _handSpeed;
 
+        [SerializeField] private bool _isLeftHand;
+        public bool IsLeft => _isLeftHand;
+
         public Vector3 LastHittedPosition { get; private set; }
 
         public event Action<SportHand, BallOnline, Vector3> OnBallTouched = (hand, ball, directionWorldSpace) => { };
@@ -37,6 +40,8 @@ namespace VrVolleyball
         private Vector3 _lastHandPosition;
         private float _handSpeedTimer;
         [SerializeField] private Vector3[] _directions;
+
+        private Collider[] _overlappedColliders = new Collider[3];
 
         private void Start()
         {
@@ -69,7 +74,8 @@ namespace VrVolleyball
 
         private void FixedUpdate()
         {
-            TryCatchBallEachSideLoop();
+            TryFindBallBySphereOverlap();
+            //TryCatchBallEachSideLoop();
             CalcualteSpeedLoop();
         }
 
@@ -85,15 +91,42 @@ namespace VrVolleyball
             _handSpeedTimer += Time.deltaTime;
         }
 
-        private void TryCatchBallEachSideLoop()
+        private void TryFindBallBySphereOverlap()
         {
-            if (!Physics.CheckSphere(transform.position, _rayLength))
+            var overlappedColliders = Physics.OverlapSphereNonAlloc(transform.position, _rayRadius, _overlappedColliders);
+            if(overlappedColliders > 0)
+            {
+                for(int i = 0; i < _overlappedColliders.Length; i++)
+                {
+                    var col = _overlappedColliders[i];
+
+                    if (col == null)
+                    {
+                        ResetHand();
+                        continue;
+                    }
+                    
+                    _currentBall = col.GetComponent<BallOnline>();
+                    if(_currentBall != null)
+                    {
+                        _isCatchedBall = true;
+                        _lastDirection = col.ClosestPoint(_currentBall.transform.position);
+                        break;
+                    }
+                    else 
+                    {
+                        ResetHand();
+                    }
+                }
+            }
+            else
             {
                 ResetHand();
-                return;
             }
+        }
 
-            
+        private void TryCatchBallEachSideLoop()
+        {      
             for (int i = 0; i < _directions.Length; i++)
             {
                 var direction = _directions[i];
@@ -106,9 +139,14 @@ namespace VrVolleyball
                     OnBallTouched(this, _currentBall, transform.TransformDirection(_lastDirection));
                     return;
                 }              
-            }
-
+            }         
             ResetHand();
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, _rayRadius);
         }
 
         private void ResetHand()

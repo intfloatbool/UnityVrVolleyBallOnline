@@ -15,7 +15,7 @@ namespace VrVolleyball
         [SerializeField] private bool _isAutoCalibrate = true;
         [SerializeField] private float _autoCalibrateDelay = 3f;
         [SerializeField] private int _autoCalibrateTimes = 6;
-
+        private bool _isForcedCalibrated;
         private void Awake()
         {
             _humanoid.IsTranslateByPhysics = _isTranslateByPhysics;
@@ -29,6 +29,8 @@ namespace VrVolleyball
                 var times = 0;
                 while(times < _autoCalibrateTimes)
                 {
+                    if (_isForcedCalibrated)
+                        yield break;
                     yield return waiting;
                     _humanoid.Calibrate();
                     times++;
@@ -49,6 +51,7 @@ namespace VrVolleyball
                 if(OVRInput.GetDown(OVRInput.RawButton.A) || Input.GetKeyDown(KeyCode.C))
                 {
                     _humanoid.Calibrate();
+                    _isForcedCalibrated = true;
                 }
             }
         }
