@@ -34,6 +34,25 @@ namespace VrVolleyball
             }
         }
 
+        public void AffectToBallAtPosition(Vector3 fromPosition, float strength)
+        {
+            Vector3 direction = _rb.transform.position - fromPosition;         
+            if (photonView.IsMine)
+            {
+                _rb.AddForceAtPosition(direction.normalized * strength, fromPosition);
+            }
+            else
+            {
+                photonView.RPC("AffectToBallAtPositionRPC", RpcTarget.MasterClient, fromPosition, direction, strength);
+            }
+        }
+
+        [PunRPC]
+        public void AffectToBallAtPositionRPC(Vector3 fromPosition, Vector3 direction, float strength)
+        {
+            _rb.AddForceAtPosition(direction.normalized * strength, fromPosition);
+        }
+
         public void AffectToBall(Vector3 affectVector, float strength)
         {
             if(photonView.IsMine)

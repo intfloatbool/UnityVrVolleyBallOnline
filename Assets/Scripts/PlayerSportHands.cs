@@ -63,33 +63,10 @@ namespace VrVolleyball
 
         private bool IsHandPunchBall(SportHand hand)
         {
-            if (hand.IsCatchedBall && hand.HandSpeed >= _handSpeedLimitToPunch)
+            if (_ball != null && hand.IsCatchedBall && hand.HandSpeed >= _handSpeedLimitToPunch)
             {
-                var originHandPosition = hand.transform.position;
-
-                if (_ball == null)
-                    return false;
-                var relativePos = _ball.transform.position - originHandPosition;
-                var facingToPos = relativePos.normalized;
-                if(hand.IsLeft)
-                {
-                    facingToPos = new Vector3(
-                        -facingToPos.x,
-                        facingToPos.y,
-                        -facingToPos.z
-                        );
-                }
-                Debug.Log("Punc at pos: " + facingToPos);
-                var forcePower = hand.HandSpeed * _touchFactor;
-                hand.CurrentBall.AffectToBall(facingToPos, forcePower);
-                
-                if(_isDebug)
-                {
-                    Debug.Log($"Affect to ball!  Hand: {hand.gameObject.name}\n "
-                    + "Direction: " +
-                    facingToPos +
-                    "\nForcePower: " + forcePower);
-                }
+                var strength = hand.HandSpeed * _touchFactor;
+                _ball.AffectToBallAtPosition(hand.LastHittedPosition, strength);
                 return true;
             }
 

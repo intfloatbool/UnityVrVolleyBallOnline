@@ -7,6 +7,7 @@ namespace VrVolleyball
     {
         [SerializeField] private float _rayLength = 0.1f;
         [SerializeField] private float _rayRadius = 0.03f;
+        [SerializeField] private float _overlappingRadius = 0.09f;
         [SerializeField] private float _speedCheckingDelay = 1f;
 
         [Space(2f)]
@@ -43,9 +44,12 @@ namespace VrVolleyball
 
         private Collider[] _overlappedColliders = new Collider[3];
 
+        int layerMask;
+
         private void Start()
         {
-            if(_directions.Length == 0)
+            layerMask = 1 << 8;
+            if (_directions.Length == 0)
             {
                 InitDefaultDirections();
             }
@@ -75,7 +79,7 @@ namespace VrVolleyball
         private void FixedUpdate()
         {
             TryFindBallBySphereOverlap();
-            //TryCatchBallEachSideLoop();
+            TryCatchBallHitPosition();
             CalcualteSpeedLoop();
         }
 
@@ -93,7 +97,13 @@ namespace VrVolleyball
 
         private void TryFindBallBySphereOverlap()
         {
-            var overlappedColliders = Physics.OverlapSphereNonAlloc(transform.position, _rayRadius, _overlappedColliders);
+             
+            var overlappedColliders = Physics.OverlapSphereNonAlloc(
+                transform.position,
+                _overlappingRadius,
+                _overlappedColliders,
+                layerMask);
+
             if(overlappedColliders > 0)
             {
                 for(int i = 0; i < _overlappedColliders.Length; i++)
@@ -125,6 +135,23 @@ namespace VrVolleyball
             }
         }
 
+
+        private void TryCatchBallHitPosition()
+        {
+            for (int i = 0; i < _directions.Length; i++)
+            {
+                var direction = _directions[i];
+
+                if (CatchBallBySyde(direction))
+                {
+
+                    _lastDirection = direction;
+                    OnBallTouched(this, _currentBall, transform.TransformDirection(_lastDirection));
+                    return;
+                }
+            }
+        }
+
         private void TryCatchBallEachSideLoop()
         {      
             for (int i = 0; i < _directions.Length; i++)
@@ -146,7 +173,11 @@ namespace VrVolleyball
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, _rayRadius);
+            Gizmos.DrawWireSphere(transform.position, _overlappingRadius);
+
+            //Directions
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(transform.position, LastHittedPosition);
         }
 
         private void ResetHand()
@@ -154,6 +185,33 @@ namespace VrVolleyball
             _isCatchedBall = false;
             _currentBall = null;
             _lastDirection = Vector3.zero;
+        }
+
+        private bool CatchBallHitPositionBySide(Vector3 rawDirection)
+        {
+            if (_isDebug)
+            {
+                Debug.DrawRay(transform.position, transform.TransformDirection(rawDirection) * _rayLength, Color.red, 0.3f);
+            }
+
+
+            RaycastHit hit;
+            if (Physics.SphereCast(transform.position,
+                _rayRadius,
+                transform.TransformDirection(rawDirection),
+                out hit,
+                _rayLength, layerMask)
+                )
+            {
+                if (_isDebug)
+                {
+                    Debug.Log("Ball catched by side: " + rawDirection);
+                }
+
+                LastHittedPosition = hit.point;
+                return true;
+            }
+            return false;
         }
 
         private bool CatchBallBySyde(Vector3 rawDirection)
@@ -169,7 +227,7 @@ namespace VrVolleyball
                 _rayRadius, 
                 transform.TransformDirection(rawDirection), 
                 out hit, 
-                _rayLength)
+                _rayLength, layerMask)
                 )
             {
                 var ball = hit.collider.GetComponent<BallOnline>();
