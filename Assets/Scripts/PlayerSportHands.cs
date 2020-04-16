@@ -91,14 +91,6 @@ namespace VrVolleyball
             }
         }
 
-        private void SetBallKinematic(bool isKinematic)
-        {
-            if(_ball != null)
-            {
-                _ball.SetKinematic(isKinematic);
-            }
-        }
-
         private void SetBallVelocity(Vector3 velocity)
         {
             if(_ball != null)

@@ -24,68 +24,69 @@ namespace VrVolleyball
         public Vector3 DebugForce => _debugForce;
         [SerializeField] private float _debugStrength;
         public float DebugStrength => _debugStrength;
-        
 
-        public void SetKinematic(bool isKinematic)
-        {
-            photonView.RPC("SetKinematicRPC", RpcTarget.All, isKinematic);
-           
-        }
 
-        [PunRPC]
-        public void SetKinematicRPC(bool isKinematic)
+        private void Start()
         {
-            if(photonView.IsMine)
+            if(photonView.IsMine == false)
             {
-                _rb.isKinematic = isKinematic;
-                if(_isDebug)
-                {
-                    Debug.Log("Kinematic changed~! : " + isKinematic);
-                }
+                _rb.isKinematic = true;
             }
         }
 
         public void AffectToBall(Vector3 affectVector, float strength)
         {
-            photonView.RPC("AffectToBallRPC", RpcTarget.All, affectVector, strength);
-            
+            if(photonView.IsMine)
+            {
+                _rb.AddForce(affectVector * strength);
+            }
+            else
+            {
+                photonView.RPC("AffectToBallRPC", RpcTarget.MasterClient, affectVector, strength);
+            }
+                    
         }
 
         [PunRPC]
         public void AffectToBallRPC(Vector3 affectVector, float strength)
         {
-            if(photonView.IsMine)
-            {
-                _rb.AddForce(affectVector * strength);
-            }
+            _rb.AddForce(affectVector * strength);
         }
 
         public void SetPosition(Vector3 position)
-        {
-            photonView.RPC("SetPositionRPC", RpcTarget.All, position);
-        }
-
-        [PunRPC]
-        public void SetPositionRPC(Vector3 position)
         {
             if(photonView.IsMine)
             {
                 transform.position = position;
             }
-        }
-
-        public void SetVelocity(Vector3 velocity)
-        {
-            photonView.RPC("SetVeloctyRPC", RpcTarget.All, velocity);
+            else
+            {
+                photonView.RPC("SetPositionRPC", RpcTarget.MasterClient, position);
+            }            
         }
 
         [PunRPC]
-        public void SetVeloctyRPC(Vector3 velocity)
+        public void SetPositionRPC(Vector3 position)
+        {
+            transform.position = position;
+        }
+
+        public void SetVelocity(Vector3 velocity)
         {
             if(photonView.IsMine)
             {
                 _rb.velocity = velocity;
             }
+            else
+            {
+                photonView.RPC("SetVeloctyRPC", RpcTarget.MasterClient, velocity);
+            }            
+        }
+
+        [PunRPC]
+        public void SetVeloctyRPC(Vector3 velocity)
+        {
+            _rb.velocity = velocity;
         }
 
         private void Update()
