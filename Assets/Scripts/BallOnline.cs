@@ -31,11 +31,6 @@ namespace VrVolleyball
 
         private void Start()
         {
-            if(photonView.IsMine == false)
-            {
-                _rb.isKinematic = true;
-            }
-
             if(_collider == null)
             {
                 _collider = GetComponent<SphereCollider>();
@@ -45,13 +40,13 @@ namespace VrVolleyball
         public void AffectToBallAtPosition(Vector3 fromPosition, float strength)
         {
             Vector3 direction = _rb.transform.position - fromPosition;         
-            if (photonView.IsMine)
+            if(photonView.IsMine)
             {
                 _rb.AddForceAtPosition(direction.normalized * strength, fromPosition);
             }
             else
             {
-                photonView.RPC("AffectToBallAtPositionRPC", RpcTarget.MasterClient, fromPosition, direction, strength);
+                photonView.RPC("AffectToBallAtPositionRPC", RpcTarget.All, fromPosition, direction, strength);
             }
         }
 
@@ -61,25 +56,23 @@ namespace VrVolleyball
             _rb.AddForceAtPosition(direction.normalized * strength, fromPosition);
         }
 
+
         public void AffectToBall(Vector3 affectVector, float strength)
         {
             if(photonView.IsMine)
             {
-                _rb.AddForce(affectVector * strength);
+                _rb.AddForce(affectVector * strength, ForceMode.Force);
             }
             else
             {
-                photonView.RPC("AffectToBallRPC", RpcTarget.MasterClient, affectVector, strength);
-            }
-                    
+                photonView.RPC("AffectToBallRPC", RpcTarget.All, affectVector, strength);
+            }            
         }
 
         [PunRPC]
         public void AffectToBallRPC(Vector3 affectVector, float strength)
         {
             _rb.AddForce(affectVector * strength);
-
-            Debug.Log($"Affect from remote player! Vector: {affectVector}, strength: {strength}");
         }
 
         public void SetPosition(Vector3 position)
@@ -90,8 +83,8 @@ namespace VrVolleyball
             }
             else
             {
-                photonView.RPC("SetPositionRPC", RpcTarget.MasterClient, position);
-            }            
+                photonView.RPC("SetPositionRPC", RpcTarget.All, position);
+            }                    
         }
 
         [PunRPC]
@@ -102,18 +95,18 @@ namespace VrVolleyball
 
         public void SetVelocity(Vector3 velocity)
         {
-            if(photonView.IsMine)
+            if (photonView.IsMine)
             {
                 _rb.velocity = velocity;
             }
             else
             {
-                photonView.RPC("SetVeloctyRPC", RpcTarget.MasterClient, velocity);
-            }            
+                photonView.RPC("SetVelocityRPC", RpcTarget.All, velocity);
+            }                   
         }
 
         [PunRPC]
-        public void SetVeloctyRPC(Vector3 velocity)
+        public void SetVelocityRPC(Vector3 velocity)
         {
             _rb.velocity = velocity;
         }

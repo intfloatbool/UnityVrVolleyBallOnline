@@ -91,7 +91,7 @@ namespace VrVolleyball
                 _handSpeedTimer = 0;
             }
 
-            _handSpeed = (transform.position - _lastHandPosition).sqrMagnitude;
+            _handSpeed = Mathf.Abs((transform.position - _lastHandPosition).magnitude);
             _handSpeedTimer += Time.deltaTime;
         }
 
