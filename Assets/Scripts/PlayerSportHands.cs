@@ -6,17 +6,18 @@ namespace VrVolleyball
 {
     public class PlayerSportHands : MonoBehaviour
     {
-        [SerializeField] private KeyCode _leftGrabDebugKey = KeyCode.O;
-        [SerializeField] private KeyCode _rightGrabDebugKey = KeyCode.P;
-
+        [Space(5f)]
+        [Header("Debugging in editor")]
         [SerializeField] private bool _isDebug = true;
+        [SerializeField] private bool _isLeftHandGrabDebug;
+        [SerializeField] private bool _isRightHandGrabDebug;
+        
         [Space(3f)]
         [SerializeField] private SportHand _leftHand;
         [SerializeField] private SportHand _rightHand;
 
         [SerializeField] private float _handSpeedLimitToPunch = 0.3f;
         [SerializeField] private float _touchFactor = 4f;
-        [SerializeField] private float _minTouchDetect = 0.1f;
         [SerializeField] private float _minPunchStrength = 0.5f;
 
         public Vector3 LastPunchedDir { get; private set; }
@@ -33,6 +34,9 @@ namespace VrVolleyball
         private IEnumerator Start()
         {
             yield return StartCoroutine(SearchBall());
+
+            _rightHand.OnGrabStopped += PunchBallOnGrabStopped;
+            _leftHand.OnGrabStopped += PunchBallOnGrabStopped;
         }
 
         private IEnumerator SearchBall()
@@ -71,22 +75,36 @@ namespace VrVolleyball
             {
                 if (IsHandGrabBall(_leftHand))
                 {
+                    if(_leftHand.IsGrabbedBall == false) 
+                    {
+                        _leftHand.IsGrabbedBall = true;
+                    }
                     GrabBall(_leftHand);                    
-                }
-                else
-                {
-                    PunchBallOnGrabStopped(_leftHand);
                 }
 
                 if (IsHandGrabBall(_rightHand))
                 {
+                    if(_rightHand.IsGrabbedBall == false) 
+                    {
+                        _rightHand.IsGrabbedBall = true;
+                    }
                     GrabBall(_rightHand); 
                 }
-                else
-                {
-                    PunchBallOnGrabStopped(_rightHand);
-                }
+            }
 
+            if(_rightHand.IsGrabbedBall) 
+            {
+                if(!_isRightHandGrabbed) 
+                {
+                    _rightHand.IsGrabbedBall = false;
+                }
+            }
+            if(_leftHand.IsGrabbedBall) 
+            {
+                if(!_isLeftHandGrabbed) 
+                {
+                    _leftHand.IsGrabbedBall = false;
+                }
             }
         }
 
@@ -96,12 +114,26 @@ namespace VrVolleyball
             var controller = hand.IsLeft ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
 
             var grabValue = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller);
-            var isGrabbed = Mathf.Approximately(grabValue, 1f);
-
-            if (_isDebug)
+            if(_isDebug)
             {
-                var key = hand.IsLeft ? _leftGrabDebugKey : _rightGrabDebugKey;
-                isGrabbed = Mathf.Approximately(grabValue, 1f) || Input.GetKey(key);
+                if(hand.IsLeft) 
+                {
+                    grabValue = _isLeftHandGrabDebug ? 1f : 0f;
+                }
+                else
+                {
+                    grabValue = _isRightHandGrabDebug ? 1f : 0f;
+                }
+                
+            }
+            var isGrabbed = Mathf.Approximately(grabValue, 1f);
+            if(hand.IsLeft) 
+            {
+                _isLeftHandGrabbed = isGrabbed;
+            }
+            else
+            {
+                _isRightHandGrabbed = isGrabbed;
             }
 
             return isGrabbed;
@@ -129,53 +161,27 @@ namespace VrVolleyball
             {
                 SetBallPosition(ballPosition);
                 SetBallVelocity(Vector3.zero);
-
-                if (_isDebug)
-                {
-                    Debug.Log($"Hand: {hand.gameObject.name} grabbed ball!");
-                }
-
-                if (hand.IsLeft)
-                {
-                    _isLeftHandGrabbed = true;
-                }
-                else
-                {
-                    _isRightHandGrabbed = true;
-                }
             }
         }
 
         private void PunchBallOnGrabStopped(SportHand hand)
         {
-            var isHandNotCatched = !hand.IsCatchedBall;
-            var isHandWasGrabbed = hand.IsLeft ? _isLeftHandGrabbed : _isRightHandGrabbed;
             var rightPos = hand.IsLeft ? -hand.transform.right : hand.transform.right;
             var punchPosition = ((-hand.transform.up) + (rightPos / 2f)).normalized;
-            if (isHandWasGrabbed && isHandNotCatched)
+            var strength = hand.HandSpeed * _touchFactor;
+
+            if(Mathf.Approximately(strength, 0f) && _isDebug)
             {
-                var strength = hand.HandSpeed * _touchFactor;
-                if(hand.HandSpeed <= _minTouchDetect)
-                {
-                    strength = _minPunchStrength * _touchFactor;
-                }
-                LastPunchStrenght = strength;
-                LastPunchedDir = punchPosition;
-                _ball.AffectToBall(punchPosition, strength);
+                strength = _minPunchStrength * _touchFactor;
+            }
 
-                if (_isDebug)
-                {
-                    Debug.Log($"BALL PUCHED BY {hand.gameObject.name}, to: {punchPosition}");
-                }
+            LastPunchStrenght = strength;
+            LastPunchedDir = punchPosition;
+            _ball.AffectToBall(punchPosition, strength);
 
-                if(hand.IsLeft)
-                {
-                    _isLeftHandGrabbed = false;
-                }
-                else
-                {
-                    _isRightHandGrabbed = false;
-                }
+            if (_isDebug)
+            {
+                Debug.Log($"BALL PUCHED BY {hand.gameObject.name}, to: {punchPosition}");
             }
         }
 

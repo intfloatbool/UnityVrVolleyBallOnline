@@ -16,11 +16,33 @@ namespace VrVolleyball
         [Space(5f)]
         [Header("Runtime references")]
         [SerializeField] private bool _isCatchedBall;
+
+        [SerializeField] private bool _isGrabbedBall;
+        public bool IsGrabbedBall 
+        {
+            get {return _isGrabbedBall;}
+            set 
+            {
+                this._isGrabbedBall = value;
+
+                if(this.IsGrabbedBall == true) 
+                {
+                    OnGrabbed(this);
+                }
+                else 
+                {
+                    OnGrabStopped(this);
+                }
+            }
+        }
         public bool IsCatchedBall 
         {
             get { return _isCatchedBall; }
             set { this._isCatchedBall = value; }
         }
+
+        public event Action<SportHand> OnGrabbed = (hand) => { Debug.Log($"{hand.name} grabbed!"); };
+        public event Action<SportHand> OnGrabStopped = (hand) => { Debug.Log($"{hand.name} grab stopped!"); };
 
         [SerializeField] private BallOnline _currentBall;
         public BallOnline CurrentBall => _currentBall;

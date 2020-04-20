@@ -31,6 +31,8 @@ MonoBehaviour:
   RunInBackground: 1
   StartInOfflineMode: 0
   RpcList:
+  - AffectToBallAtPositionRPC
+  - AffectToBallRPC
   - ClickRpc
   - DestroyRpc
   - DestroySpaceship
@@ -42,12 +44,7 @@ MonoBehaviour:
   - RpcLetGo
   - RpcLoadScene
   - RpcStartHumanoid
-  - AffectToBallRPC
-  - SetKinematicRPC
   - SetPositionRPC
-  - SetVeloctyRPC
-  - SetIsGrabbedRPC
-  - AffectToBallAtPositionRPC
   - SetVelocityRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0

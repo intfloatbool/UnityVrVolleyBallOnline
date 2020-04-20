@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f15f0b7c56552b443a87b2cf84b2083c, type: 3}
   m_Name: DefaultConfiguration
   m_EditorClassIdentifier: 
-  steamVRSupport: 0
-  openVRSupport: 0
+  steamVRSupport: 1
+  openVRSupport: 1
   viveTrackerSupport: 0
   oculusSupport: 1
-  windowsMRSupport: 0
-  vrtkSupport: 0
+  windowsMRSupport: 1
+  vrtkSupport: 1
   neuronSupport: 0
   realsenseSupport: 0
   leapSupport: 0
@@ -28,4 +28,4 @@ MonoBehaviour:
   tobiiSupport: 0
   optitrackSupport: 0
   pupilSupport: 0
-  networkingSupport: 1
+  networkingSupport: 0
