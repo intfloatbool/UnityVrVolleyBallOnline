@@ -31,6 +31,9 @@ namespace VrVolleyball
         private bool _isLeftHandGrabbed;
         private bool _isRightHandGrabbed;
 
+        public Vector3 LeftHandControllerVelocity {get; private set;}
+        public Vector3 RightHandControllerVelocity {get; private set;}
+
         private IEnumerator Start()
         {
             yield return StartCoroutine(SearchBall());
@@ -62,6 +65,8 @@ namespace VrVolleyball
              * 0 is not pressed, 1 is pressed to the end.
              */
 
+            LeftHandControllerVelocity = CalculateHandVelocityByControllers(_leftHand);
+            RightHandControllerVelocity = CalculateHandVelocityByControllers(_rightHand);
 
             _isCanGrab = _leftHand.IsCatchedBall && _rightHand.IsCatchedBall;
 
@@ -106,6 +111,16 @@ namespace VrVolleyball
                     _leftHand.IsGrabbedBall = false;
                 }
             }
+        }
+
+        private Vector3 CalculateHandVelocityByControllers(SportHand hand) 
+        {
+            var isLeft = hand.IsLeft;
+            Vector3 controllerVelocity;
+            var controller = isLeft ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+            controllerVelocity = OVRInput.GetLocalControllerVelocity(controller);
+
+            return controllerVelocity;
         }
 
         private bool IsHandGrabBall(SportHand hand)
@@ -168,8 +183,9 @@ namespace VrVolleyball
         {
             var rightPos = hand.IsLeft ? -hand.transform.right : hand.transform.right;
             var punchPosition = ((-hand.transform.up) + (rightPos / 2f)).normalized;
-            var strength = hand.HandSpeed * _touchFactor;
-
+            var handVelocityRaw = hand.IsLeft ? LeftHandControllerVelocity : RightHandControllerVelocity;
+            var handVelocityNormalized = handVelocityRaw.normalized;
+            var strength = _touchFactor * handVelocityNormalized.magnitude;
             if(Mathf.Approximately(strength, 0f) && _isDebug)
             {
                 strength = _minPunchStrength * _touchFactor;
@@ -177,7 +193,7 @@ namespace VrVolleyball
 
             LastPunchStrenght = strength;
             LastPunchedDir = punchPosition;
-            _ball.AffectToBall(punchPosition, strength);
+            _ball.AffectToBall(handVelocityNormalized, strength);
 
             if (_isDebug)
             {

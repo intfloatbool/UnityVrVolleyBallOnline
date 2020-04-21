@@ -51,7 +51,11 @@ namespace VrVolleyball
         public Vector3 LastDirection => _lastDirection;
 
         [SerializeField] private float _handSpeed;
-        public float HandSpeed => _handSpeed;
+        public float HandSpeed
+        {
+            get {return _handSpeed;}
+            set {this._handSpeed = value;}
+        }
 
         [SerializeField] private bool _isLeftHand;
         public bool IsLeft => _isLeftHand;
@@ -113,7 +117,7 @@ namespace VrVolleyball
                 _handSpeedTimer = 0;
             }
 
-            _handSpeed = Mathf.Abs((transform.position - _lastHandPosition).magnitude);
+            _handSpeed = (transform.position - _lastHandPosition).magnitude;
             _handSpeedTimer += Time.deltaTime;
         }
 

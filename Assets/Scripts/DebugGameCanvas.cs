@@ -10,6 +10,8 @@ public class DebugGameCanvas : MonoBehaviour
     [SerializeField] private Text _ballVelocityText;
     [SerializeField] private Text _lastPunchPowerText;
     [SerializeField] private Text _lastPunchDirText;
+    [SerializeField] private Text _leftControllerVelocityText;
+    [SerializeField] private Text _rightControllerVelocityText;
     [SerializeField] private SportHand _leftHand;
     [SerializeField] private SportHand _rightHand;
     [SerializeField] private PlayerSportHands _sportHands;
@@ -55,6 +57,14 @@ public class DebugGameCanvas : MonoBehaviour
             _lastPunchDirText.text = _sportHands.LastPunchedDir.ToString();
         }
 
+        if(_sportHands != null && _leftControllerVelocityText != null)
+        {
+            _leftControllerVelocityText.text = _sportHands.LeftHandControllerVelocity.ToString();
+        }
+        if(_sportHands != null && _rightControllerVelocityText != null)
+        {
+            _rightControllerVelocityText.text = _sportHands.RightHandControllerVelocity.ToString();
+        }
     }
 
     private string GetRounded(float val)

@@ -35,6 +35,8 @@ namespace VrVolleyball
             {
                 _collider = GetComponent<SphereCollider>();
             }
+
+            Debug.Log("Create ball, isMine: " + photonView.IsMine);
         }
 
         public void AffectToBallAtPosition(Vector3 fromPosition, float strength)
@@ -61,7 +63,7 @@ namespace VrVolleyball
         {
             if(photonView.IsMine)
             {
-                _rb.AddForce(affectVector * strength, ForceMode.Force);
+                _rb.AddForce(affectVector * strength);
             }
             else
             {
