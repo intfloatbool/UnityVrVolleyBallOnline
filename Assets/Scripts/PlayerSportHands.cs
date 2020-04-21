@@ -26,7 +26,9 @@ namespace VrVolleyball
         [Space(3f)]
         [SerializeField] private BallOnline _ball;
 
-        private bool _isCanGrab;
+        private bool _isBothHandsGrab;
+
+        private bool _isBallAtCenterOfHands;
 
         private bool _isLeftHandGrabbed;
         private bool _isRightHandGrabbed;
@@ -68,15 +70,16 @@ namespace VrVolleyball
             LeftHandControllerVelocity = CalculateHandVelocityByControllers(_leftHand);
             RightHandControllerVelocity = CalculateHandVelocityByControllers(_rightHand);
 
-            _isCanGrab = _leftHand.IsCatchedBall && _rightHand.IsCatchedBall;
-
-            if (_isCanGrab)
+            _isBothHandsGrab = IsHandGrabBall(_leftHand) && IsHandGrabBall(_rightHand); 
+            
+            if (_isBothHandsGrab)
             {
-                var middlePosition = (_leftHand.transform.position + _rightHand.transform.position) / 2;
-                SetBallPosition(middlePosition);
-                SetBallVelocity(Vector3.zero);
+                if(!_isBallAtCenterOfHands) {
+                    _isBallAtCenterOfHands = true;
+                }
+                GrabBallAtCenterBetweenHands();               
             }
-            else
+            if(!_isBallAtCenterOfHands)
             {
                 if (IsHandGrabBall(_leftHand))
                 {
@@ -95,6 +98,15 @@ namespace VrVolleyball
                     }
                     GrabBall(_rightHand); 
                 }
+            }           
+
+            if(_isBallAtCenterOfHands) 
+            {
+                if(!_isLeftHandGrabbed || !_isRightHandGrabbed) 
+                {
+                    _isBallAtCenterOfHands = false;
+                    PunhBallFromBothHands();                   
+                }
             }
 
             if(_rightHand.IsGrabbedBall) 
@@ -104,6 +116,7 @@ namespace VrVolleyball
                     _rightHand.IsGrabbedBall = false;
                 }
             }
+
             if(_leftHand.IsGrabbedBall) 
             {
                 if(!_isLeftHandGrabbed) 
@@ -111,6 +124,7 @@ namespace VrVolleyball
                     _leftHand.IsGrabbedBall = false;
                 }
             }
+         
         }
 
         private Vector3 CalculateHandVelocityByControllers(SportHand hand) 
@@ -179,13 +193,39 @@ namespace VrVolleyball
             }
         }
 
+        private void GrabBallAtCenterBetweenHands() 
+        {
+            var middlePosition = (_leftHand.transform.position + _rightHand.transform.position) / 2;
+            SetBallPosition(middlePosition);
+            SetBallVelocity(Vector3.zero);
+        }
+
+        private void PunhBallFromBothHands() 
+        {
+            if(_isDebug) 
+            {
+                Debug.Log("Ball punched from both hands!");
+            }    
+
+            var handsVelocityRaw = LeftHandControllerVelocity + RightHandControllerVelocity;
+            var handsVelocityNormalized = handsVelocityRaw.normalized;
+            var strength = _touchFactor * handsVelocityNormalized.magnitude; 
+             _ball.AffectToBall(handsVelocityNormalized, strength);
+             if (_isDebug)
+            {
+                Debug.Log($"BALL PUCHED BY CENTER, to: {handsVelocityNormalized}, strength: {strength}");
+            }
+        }
+
         private void PunchBallOnGrabStopped(SportHand hand)
         {
             var rightPos = hand.IsLeft ? -hand.transform.right : hand.transform.right;
             var punchPosition = ((-hand.transform.up) + (rightPos / 2f)).normalized;
+
             var handVelocityRaw = hand.IsLeft ? LeftHandControllerVelocity : RightHandControllerVelocity;
             var handVelocityNormalized = handVelocityRaw.normalized;
             var strength = _touchFactor * handVelocityNormalized.magnitude;
+
             if(Mathf.Approximately(strength, 0f) && _isDebug)
             {
                 strength = _minPunchStrength * _touchFactor;
@@ -193,11 +233,12 @@ namespace VrVolleyball
 
             LastPunchStrenght = strength;
             LastPunchedDir = punchPosition;
+
             _ball.AffectToBall(handVelocityNormalized, strength);
 
             if (_isDebug)
             {
-                Debug.Log($"BALL PUCHED BY {hand.gameObject.name}, to: {punchPosition}");
+                Debug.Log($"BALL PUCHED BY {hand.gameObject.name}, to: {handVelocityNormalized}");
             }
         }
 
