@@ -1,0 +1,4 @@
+Troubles:
+	21.04.2020
+- Ball firstable fall by gravity and punched is delayed;
+- Very low hand speed detection
