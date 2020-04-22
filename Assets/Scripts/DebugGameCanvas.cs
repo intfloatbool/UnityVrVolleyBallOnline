@@ -17,6 +17,7 @@ public class DebugGameCanvas : MonoBehaviour
     private BallOnline _ball;
 
     private readonly string ZERO_STR = "0.0";
+
     private void FixedUpdate()
     {
         ShowDebugInfo();

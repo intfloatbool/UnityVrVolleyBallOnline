@@ -5,18 +5,23 @@ using UnityEngine.Animations;
 namespace VrVolleyball
 {
     public class PlayerSportHands : MonoBehaviour
-    {
-        [Space(5f)]
+    {       
         [Header("Debugging in editor")]
         [SerializeField] private bool _isDebug = true;
         [SerializeField] private bool _isLeftHandGrabDebug;
         [SerializeField] private bool _isRightHandGrabDebug;
+        [SerializeField] private KeyCode _leftGrabSiwtcherKey = KeyCode.O;
+        [SerializeField] private KeyCode _rightGrabSiwtcherKey = KeyCode.P;
+        [SerializeField] private float _movingSpeedDebug = 5f;
+        private readonly string MouseX_nameDebug = "Mouse X";
+        private readonly string MouseY_nameDebug = "Mouse Y";
+        private readonly string VerticalAxisNameDebug = "Vertical";
+        private readonly string HorizontalAxisNameDebug = "Horizontal";
         
-        [Space(3f)]
+        [Space(5f)]
+        [Header("Main properties")]
         [SerializeField] private SportHand _leftHand;
         [SerializeField] private SportHand _rightHand;
-
-        [SerializeField] private float _handSpeedLimitToPunch = 0.3f;
         [SerializeField] private float _touchFactor = 4f;
         [SerializeField] private float _minPunchStrength = 0.5f;
 
@@ -33,8 +38,18 @@ namespace VrVolleyball
         private bool _isLeftHandGrabbed;
         private bool _isRightHandGrabbed;
 
-        public Vector3 LeftHandControllerVelocity {get; private set;}
-        public Vector3 RightHandControllerVelocity {get; private set;}
+        [SerializeField] private Vector3 _leftHandControllerVelocity;
+        public Vector3 LeftHandControllerVelocity 
+        {
+            get {return _leftHandControllerVelocity;}
+            set {this._leftHandControllerVelocity = value;}
+        }
+        [SerializeField] private Vector3 _rightHandControllerVelocity;
+        public Vector3 RightHandControllerVelocity 
+        {
+            get {return _rightHandControllerVelocity;}
+            set {this._rightHandControllerVelocity = value;}
+        }      
 
         private IEnumerator Start()
         {
@@ -67,9 +82,12 @@ namespace VrVolleyball
              * 0 is not pressed, 1 is pressed to the end.
              */
 
-            LeftHandControllerVelocity = CalculateHandVelocityByControllers(_leftHand);
-            RightHandControllerVelocity = CalculateHandVelocityByControllers(_rightHand);
-
+            if(!_isDebug)
+            {
+                LeftHandControllerVelocity = CalculateHandVelocityByControllers(_leftHand);
+                RightHandControllerVelocity = CalculateHandVelocityByControllers(_rightHand);
+            }
+            
             _isBothHandsGrab = IsHandGrabBall(_leftHand) && IsHandGrabBall(_rightHand); 
             
             if (_isBothHandsGrab)
@@ -124,7 +142,26 @@ namespace VrVolleyball
                     _leftHand.IsGrabbedBall = false;
                 }
             }
+
+            if(_isDebug)
+            {
+                ControlDebugLoop();
+            }
          
+        }
+
+        private void ControlDebugLoop() {
+            LeftHandControllerVelocity = Vector3.up * Input.GetAxis(HorizontalAxisNameDebug);
+            RightHandControllerVelocity = Vector3.up * Input.GetAxis(VerticalAxisNameDebug);
+
+            if(Input.GetKeyDown(_leftGrabSiwtcherKey))
+            {
+                _isLeftHandGrabDebug = !_isLeftHandGrabDebug;
+            }
+            if(Input.GetKeyDown(_rightGrabSiwtcherKey))
+            {
+                _isRightHandGrabDebug = !_isRightHandGrabDebug;
+            }  
         }
 
         private Vector3 CalculateHandVelocityByControllers(SportHand hand) 
@@ -140,6 +177,10 @@ namespace VrVolleyball
         private bool IsHandGrabBall(SportHand hand)
         {
             //0 is not pressed, 1 is pressed to the end.
+            if(!hand.IsCatchedBall) 
+            {
+                return false;
+            }
             var controller = hand.IsLeft ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
 
             var grabValue = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller);
@@ -226,6 +267,7 @@ namespace VrVolleyball
             var handVelocityNormalized = handVelocityRaw.normalized;
             var strength = _touchFactor * handVelocityNormalized.magnitude;
 
+            //Debugging
             if(Mathf.Approximately(strength, 0f) && _isDebug)
             {
                 strength = _minPunchStrength * _touchFactor;
@@ -233,6 +275,20 @@ namespace VrVolleyball
 
             LastPunchStrenght = strength;
             LastPunchedDir = punchPosition;
+
+            var handVelX = handVelocityNormalized.x;
+            var handVelY = handVelocityNormalized.y;
+            var handVelZ = handVelocityNormalized.z;
+
+            if(Mathf.Approximately(handVelX, 0f) &&
+                Mathf.Approximately(handVelY, 0f) && 
+                Mathf.Approximately(handVelZ, 0f))
+            {
+                if(_isDebug) {
+                    Debug.Log("Ball not punched.");
+                }
+                return;
+            }
 
             _ball.AffectToBall(handVelocityNormalized, strength);
 
