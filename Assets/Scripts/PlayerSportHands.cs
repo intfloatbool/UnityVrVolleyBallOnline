@@ -25,8 +25,12 @@ namespace VrVolleyball
         [SerializeField] private float _touchFactor = 4f;
         [SerializeField] private float _minPunchStrength = 0.5f;
 
+        [SerializeField] private float _minHandSpeedToPunch = 0.4f;    
         public Vector3 LastPunchedDir { get; private set; }
         public float LastPunchStrenght { get; private set; }
+
+        [SerializeField] private float _punchDelay = 1f;
+        private float _punchTimer;
 
         [Space(3f)]
         [SerializeField] private BallOnline _ball;
@@ -53,10 +57,17 @@ namespace VrVolleyball
 
         private IEnumerator Start()
         {
+            //TEST
+            var vec1 = new Vector3(0.1f, 0.2f, -0.1f);
+            Debug.Log("Vec 1 magnitude " + vec1.magnitude + " sqrMagnitude: " +  vec1.sqrMagnitude);
             yield return StartCoroutine(SearchBall());
 
-            _rightHand.OnGrabStopped += PunchBallOnGrabStopped;
-            _leftHand.OnGrabStopped += PunchBallOnGrabStopped;
+            _rightHand.OnGrabStopped += (hand) => {
+                PunchBallOnGrabStopped(hand);
+            };
+            _leftHand.OnGrabStopped += (hand) =>  {
+                PunchBallOnGrabStopped(hand);
+            };
         }
 
         private IEnumerator SearchBall()
@@ -143,11 +154,35 @@ namespace VrVolleyball
                 }
             }
 
+
+            PunchByHandsIfNotGrabbedLoop();
+
             if(_isDebug)
             {
                 ControlDebugLoop();
             }
          
+        }
+
+        private void PunchByHandsIfNotGrabbedLoop() 
+        {
+            CheckHandForPunching(_leftHand);  
+            CheckHandForPunching(_rightHand);         
+        }
+
+        
+        private void CheckHandForPunching(SportHand hand) 
+        {
+            if(hand.IsCatchedBall && !hand.IsGrabbedBall) 
+            {
+                var handMultipler = 0.35f;
+                var handVelocity = hand.IsLeft ? LeftHandControllerVelocity : RightHandControllerVelocity;
+                var handSpeed = handVelocity.magnitude;
+                if(handSpeed >= _minHandSpeedToPunch)
+                {
+                    PunchBallOnGrabStopped(hand, handMultipler);
+                }
+            }
         }
 
         private void ControlDebugLoop() {
@@ -248,7 +283,7 @@ namespace VrVolleyball
                 Debug.Log("Ball punched from both hands!");
             }    
 
-            var handsVelocityRaw = LeftHandControllerVelocity + RightHandControllerVelocity;
+            var handsVelocityRaw = (LeftHandControllerVelocity + RightHandControllerVelocity) / 2f;
             var handsVelocityNormalized = handsVelocityRaw.normalized;
             var strength = _touchFactor * handsVelocityNormalized.magnitude; 
              _ball.AffectToBall(handsVelocityNormalized, strength);
@@ -258,7 +293,7 @@ namespace VrVolleyball
             }
         }
 
-        private void PunchBallOnGrabStopped(SportHand hand)
+        private void PunchBallOnGrabStopped(SportHand hand, float? mutipler = null)
         {
             var rightPos = hand.IsLeft ? -hand.transform.right : hand.transform.right;
             var punchPosition = ((-hand.transform.up) + (rightPos / 2f)).normalized;
@@ -271,6 +306,10 @@ namespace VrVolleyball
             if(Mathf.Approximately(strength, 0f) && _isDebug)
             {
                 strength = _minPunchStrength * _touchFactor;
+            }
+
+            if(mutipler != null && mutipler.HasValue) {
+                strength *= mutipler.Value;
             }
 
             LastPunchStrenght = strength;
