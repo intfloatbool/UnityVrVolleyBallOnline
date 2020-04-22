@@ -8,6 +8,7 @@ namespace VrVolleyball
 {
     public class BallOnline : MonoBehaviourPun
     {
+        public static readonly string BallTag = "GameBall";
         [SerializeField] private SphereCollider _collider;
         public SphereCollider Collider => _collider;
 

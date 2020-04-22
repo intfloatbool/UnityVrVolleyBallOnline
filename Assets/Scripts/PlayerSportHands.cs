@@ -242,18 +242,6 @@ namespace VrVolleyball
             }
         }
 
-        private bool IsHandPunchBall(SportHand hand)
-        {
-            if (_ball != null && hand.IsCatchedBall && hand.HandSpeed >= _handSpeedLimitToPunch)
-            {
-                var strength = hand.HandSpeed * _touchFactor;
-                _ball.AffectToBallAtPosition(hand.LastHittedPosition, strength);
-                return true;
-            }
-
-            return false;
-        }
-
         private void SetBallPosition(Vector3 position)
         {
             if(_ball != null)

@@ -5,8 +5,6 @@ using VrVolleyball;
 
 public class DebugGameCanvas : MonoBehaviour
 {
-    [SerializeField] private Text _leftHandSpeedText;
-    [SerializeField] private Text _rightHandSpeedText;
     [SerializeField] private Text _ballVelocityText;
     [SerializeField] private Text _lastPunchPowerText;
     [SerializeField] private Text _lastPunchDirText;
@@ -30,16 +28,6 @@ public class DebugGameCanvas : MonoBehaviour
         if(_ball == null)
         {
             _ball = FindObjectOfType<BallOnline>();
-        }
-
-        if(_rightHandSpeedText != null && _rightHand != null)
-        {
-            _rightHandSpeedText.text = GetRounded(_rightHand.HandSpeed);
-        }
-
-        if (_leftHandSpeedText != null && _leftHand != null)
-        {
-            _leftHandSpeedText.text = GetRounded(_leftHand.HandSpeed);
         }
 
         if(_ball != null && _ballVelocityText != null)
