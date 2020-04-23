@@ -10,6 +10,8 @@ public class DebugGameCanvas : MonoBehaviour
     [SerializeField] private Text _lastPunchDirText;
     [SerializeField] private Text _leftControllerVelocityText;
     [SerializeField] private Text _rightControllerVelocityText;
+    [SerializeField] private Text _lastHandVelocityNormalizedText;
+    [SerializeField] private Text _lastHandVelocityMagnitudeText;
     [SerializeField] private SportHand _leftHand;
     [SerializeField] private SportHand _rightHand;
     [SerializeField] private PlayerSportHands _sportHands;
@@ -53,6 +55,13 @@ public class DebugGameCanvas : MonoBehaviour
         if(_sportHands != null && _rightControllerVelocityText != null)
         {
             _rightControllerVelocityText.text = _sportHands.RightHandControllerVelocity.ToString();
+        }
+
+        if(_sportHands != null && _lastHandVelocityNormalizedText != null && _lastHandVelocityMagnitudeText != null)  
+        {
+            _lastHandVelocityNormalizedText.text = _sportHands.LastPunchedHandVelocityNormalized.ToString();
+            _lastHandVelocityMagnitudeText.text = _sportHands.LastPunchedHandVelocityNormalized.magnitude.ToString();
+            
         }
     }
 

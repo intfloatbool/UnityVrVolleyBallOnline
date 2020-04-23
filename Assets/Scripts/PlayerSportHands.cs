@@ -28,6 +28,7 @@ namespace VrVolleyball
         [SerializeField] private float _minHandSpeedToPunch = 0.4f;    
         public Vector3 LastPunchedDir { get; private set; }
         public float LastPunchStrenght { get; private set; }
+        public Vector3 LastPunchedHandVelocityNormalized {get; private set;}
 
         [SerializeField] private float _punchDelay = 1f;
         private float _punchTimer;
@@ -91,13 +92,7 @@ namespace VrVolleyball
              * You can check the static float from
              * OVRInput.Get(Axis.1D.PrimaryHandTrigger, OVRInput.Controller.LTouch), 
              * 0 is not pressed, 1 is pressed to the end.
-             */
-
-            if(!_isDebug)
-            {
-                LeftHandControllerVelocity = CalculateHandVelocityByControllers(_leftHand);
-                RightHandControllerVelocity = CalculateHandVelocityByControllers(_rightHand);
-            }
+             */           
             
             _isBothHandsGrab = IsHandGrabBall(_leftHand) && IsHandGrabBall(_rightHand); 
             
@@ -160,6 +155,13 @@ namespace VrVolleyball
             if(_isDebug)
             {
                 ControlDebugLoop();
+            }
+
+            
+            if(!_isDebug)
+            {
+                LeftHandControllerVelocity = CalculateHandVelocityByControllers(_leftHand);
+                RightHandControllerVelocity = CalculateHandVelocityByControllers(_rightHand);
             }
          
         }
@@ -314,11 +316,12 @@ namespace VrVolleyball
 
             LastPunchStrenght = strength;
             LastPunchedDir = punchPosition;
+            LastPunchedHandVelocityNormalized = handVelocityNormalized;
 
             var handVelX = handVelocityNormalized.x;
             var handVelY = handVelocityNormalized.y;
             var handVelZ = handVelocityNormalized.z;
-
+            
             if(Mathf.Approximately(handVelX, 0f) &&
                 Mathf.Approximately(handVelY, 0f) && 
                 Mathf.Approximately(handVelZ, 0f))
@@ -331,10 +334,7 @@ namespace VrVolleyball
 
             _ball.AffectToBall(handVelocityNormalized, strength);
 
-            if (_isDebug)
-            {
-                Debug.Log($"BALL PUCHED BY {hand.gameObject.name}, to: {handVelocityNormalized}");
-            }
+            Debug.Log($"BALL PUCHED BY {hand.gameObject.name},\n to: {handVelocityNormalized.ToString()},\n strength: {strength.ToString()}");
         }
 
         private void SetBallPosition(Vector3 position)
